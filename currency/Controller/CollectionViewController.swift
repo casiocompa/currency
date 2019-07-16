@@ -69,11 +69,11 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
         super.viewDidLoad()
         setupView ()
         fethDate = today()
-        //        fetchingData (date: fetchDate)
     }
     
     
-    func setupView () {    
+    func setupView () {
+        view.backgroundColor = .white
         if #available(iOS 11.0, *) {
             collectionView.contentInsetAdjustmentBehavior = .always
         }
@@ -223,9 +223,14 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        setupView ()
+   
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+             setupView ()
+    }
+   
     
     func startSpiner () {
         fadeView.frame = self.view.frame
