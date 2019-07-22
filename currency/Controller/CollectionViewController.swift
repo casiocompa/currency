@@ -27,25 +27,15 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
     }
     
     func fetchDate(_ date: String) {
-        
         if self.fethDate != date {
             fethDate = date
-        }
-        
+        }        
     }
     
     let activityView = UIActivityIndicatorView(style: .whiteLarge)
     let fadeView:UIView = UIView()
     
-    private let reuseIdentifierFirst = "firstCollectionViewCell"
-    private let reuseIdentifierSecond = "secondCollectionViewCell"
-    
-    
-    private var currenciesRates: ToDateCurrenciesRatesStruct? {
-        didSet {
-            //            collectionView.reloadData()
-        }
-    }
+    private var currenciesRates: ToDateCurrenciesRatesStruct?
     
     private var currencyCodeFirst: String? {
         didSet{
@@ -71,46 +61,50 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
         fethDate = today()
     }
     
-    
     func setupView () {
         view.backgroundColor = .white
         if #available(iOS 11.0, *) {
             collectionView.contentInsetAdjustmentBehavior = .always
         }
-        
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.layoutIfNeeded()
+        if orientation (),
+            let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.scrollDirection = .vertical
+            layout.invalidateLayout()
+        } else if !orientation (),
+            let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.scrollDirection = .horizontal
+            layout.invalidateLayout()
+        }
         collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
         collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor).isActive = true
         collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        
-        
-        if UIDevice.current.orientation.isPortrait,
-            let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-            layout.scrollDirection = .vertical
-        } else if UIDevice.current.orientation.isLandscape,
-            let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-            layout.scrollDirection = .horizontal
-            
-        }
-        
     }
     
+    func orientation () -> Bool{
+        let orientation = UIApplication.shared.statusBarOrientation
+        if orientation == .portrait {
+            return true
+            //Portrait orientation
+        } else if orientation == .landscapeRight || orientation ==
+            .landscapeLeft{
+             //Landscape orientation
+            return false
+        }
+        return false
+    }
     
     
     // MARK: UICollectionViewDataSource
-    
     override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1
     }
     
-    
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of items
         return 2
     }
-    
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.row == 0 {
@@ -137,14 +131,10 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
         }
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        if UIDevice.current.orientation.isPortrait {
+        if orientation () {
             let width = view.frame.size.width
             let height = view.frame.size.height
-            
-            
             if indexPath.row == 0 {
                 return CGSize(width: width - 16, height: 195)
             }
@@ -154,9 +144,7 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
                 }else {
                     return CGSize(width: width - 16, height: height - 195 - 44 - 22)
                 }
-                
             }
-            
         } else  {
             var width = view.frame.size.width/2
             var height = view.frame.size.height - 44
@@ -165,43 +153,32 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
                 height = height - 22
             }
             return CGSize(width: width, height: height)
-            
         }
-        
     }
     
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
         collectionView.layoutIfNeeded()
-        if UIDevice.current.orientation.isPortrait,
+        if orientation (),   //Portrait orientation
             let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.scrollDirection = .vertical
-            
             layout.invalidateLayout()
-            
-        } else if UIDevice.current.orientation.isLandscape,
+        } else if orientation (), ///Landscape orientation
             let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
             layout.scrollDirection = .horizontal
             layout.invalidateLayout()
         }
     }
     
-    
     func fetchingData (date: String) {
         startSpiner ()
-   
         CurrencyRateAPI().read(to: date, returning: ToDateCurrenciesRatesStruct.self, completion: { (object) in
-            
             DispatchQueue.main.async {
                 self.currenciesRates = object
                 self.stopSpiner ()
                 self.collectionView.reloadData()
             }
         })
-
     }
-    
-    
-    
     
     private func formatDateToString(_ date: Date) -> String {
         let formatter = DateFormatter()
@@ -220,17 +197,6 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
         presentationController.permittedArrowDirections = [.down, .up]
         self.present(controller, animated: true)
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-   
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-             setupView ()
-    }
-   
     
     func startSpiner () {
         fadeView.frame = self.view.frame
