@@ -90,7 +90,7 @@ class CollectionViewController: UICollectionViewController, UICollectionViewDele
             //Portrait orientation
         } else if orientation == .landscapeRight || orientation ==
             .landscapeLeft{
-             //Landscape orientation
+            //Landscape orientation
             return false
         }
         return false
